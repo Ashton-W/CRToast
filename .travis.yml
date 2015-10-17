@@ -1,10 +1,5 @@
 language: objective-c
-before_install:
-  - brew update
-  - brew reinstall xctool
-  - gem update cocoapods
-podfile: Example/Podfile
-xcode_workspace: Example/CRToastDemo.xcworkspace
-xcode_scheme: CRToastTests
+xcode_project: CRToast.xcodeproj
+xcode_scheme: CRToast
 xcode_sdk:
   - iphonesimulator
