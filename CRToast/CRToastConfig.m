@@ -5,7 +5,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
-#import "CRToast.h"
+#import "CRToastConfig.h"
 #import "CRToastView.h"
 #import "CRToastLayoutHelpers.h"
 
@@ -178,6 +178,7 @@ NSArray * CRToastGenericRecognizersMake(id target, CRToastInteractionResponder *
 
 NSString *const kCRToastNotificationTypeKey                 = @"kCRToastNotificationTypeKey";
 NSString *const kCRToastNotificationPreferredHeightKey      = @"kCRToastNotificationPreferredHeightKey";
+NSString *const kCRToastNotificationPreferredPaddingKey     = @"kCRToastNotificationPreferredPaddingKey";
 NSString *const kCRToastNotificationPresentationTypeKey     = @"kCRToastNotificationPresentationTypeKey";
 
 NSString *const kCRToastUnderStatusBarKey                   = @"kCRToastUnderStatusBarKey";
@@ -218,6 +219,7 @@ NSString *const kCRToastBackgroundViewKey                   = @"kCRToastBackgrou
 NSString *const kCRToastImageKey                            = @"kCRToastImageKey";
 NSString *const kCRToastImageContentModeKey                 = @"kCRToastImageContentModeKey";
 NSString *const kCRToastImageAlignmentKey                   = @"kCRToastImageAlignmentKey";
+NSString *const kCRToastImageTintKey                        = @"kCRToastImageTintKey";
 NSString *const kCRToastShowActivityIndicatorKey            = @"kCRToastShowActivityIndicatorKey";
 NSString *const kCRToastActivityIndicatorViewStyleKey       = @"kCRToastActivityIndicatorViewStyleKey";
 NSString *const kCRToastActivityIndicatorAlignmentKey       = @"kCRToastActivityIndicatorAlignmentKey";
@@ -234,6 +236,7 @@ NSString *const kCRToastCaptureDefaultWindowKey             = @"kCRToastCaptureD
 
 static CRToastType                   kCRNotificationTypeDefault             = CRToastTypeStatusBar;
 static CGFloat                       kCRNotificationPreferredHeightDefault  = 0;
+static CGFloat                       kCRNotificationPreferredPaddingDefault  = 0;
 static CRToastPresentationType       kCRNotificationPresentationTypeDefault = CRToastPresentationTypePush;
 static BOOL                          kCRDisplayUnderStatusBarDefault        = NO;
 static BOOL                          kCRToastKeepNavigationBarBorderDefault = YES;
@@ -273,6 +276,7 @@ static UIView   *                    kCRBackgroundView                      = ni
 static UIImage  *                    kCRImageDefault                        = nil;
 static UIViewContentMode             kCRImageContentModeDefault             = UIViewContentModeCenter;
 static CRToastAccessoryViewAlignment kCRImageAlignmentDefault               = CRToastAccessoryViewAlignmentLeft;
+static UIColor  *                    kCRImageTintDefault                    = nil;
 static BOOL                          kCRShowActivityIndicatorDefault        = NO;
 static UIActivityIndicatorViewStyle  kCRActivityIndicatorViewStyleDefault   = UIActivityIndicatorViewStyleWhite;
 static CRToastAccessoryViewAlignment kCRActivityIndicatorAlignmentDefault   = CRToastAccessoryViewAlignmentLeft;
@@ -307,6 +311,7 @@ static NSDictionary *                kCRToastKeyClassMap                    = ni
         
         kCRToastKeyClassMap = @{kCRToastNotificationTypeKey                 : NSStringFromClass([@(kCRNotificationTypeDefault) class]),
                                 kCRToastNotificationPreferredHeightKey      : NSStringFromClass([@(kCRNotificationPreferredHeightDefault) class]),
+                                kCRToastNotificationPreferredPaddingKey      : NSStringFromClass([@(kCRNotificationPreferredPaddingDefault) class]),
                                 kCRToastNotificationPresentationTypeKey     : NSStringFromClass([@(kCRNotificationPresentationTypeDefault) class]),
                                 kCRToastUnderStatusBarKey                   : NSStringFromClass([@(kCRDisplayUnderStatusBarDefault) class]),
                                 kCRToastKeepNavigationBarBorderKey          : NSStringFromClass([@(kCRToastKeepNavigationBarBorderDefault) class]),
@@ -346,6 +351,7 @@ static NSDictionary *                kCRToastKeyClassMap                    = ni
                                 kCRToastImageKey                            : NSStringFromClass([UIImage class]),
                                 kCRToastImageContentModeKey                 : NSStringFromClass([@(kCRImageContentModeDefault) class]),
                                 kCRToastImageAlignmentKey                   : NSStringFromClass([@(kCRImageAlignmentDefault) class]),
+                                kCRToastImageTintKey                        : NSStringFromClass([UIColor class]),
                                 kCRToastShowActivityIndicatorKey            : NSStringFromClass([@(kCRShowActivityIndicatorDefault) class]),
                                 kCRToastActivityIndicatorViewStyleKey       : NSStringFromClass([@(kCRActivityIndicatorViewStyleDefault) class]),
                                 kCRToastActivityIndicatorAlignmentKey       : NSStringFromClass([@(kCRActivityIndicatorAlignmentDefault) class]),
@@ -377,6 +383,7 @@ static NSDictionary *                kCRToastKeyClassMap                    = ni
     //TODO Validate Types of Default Options
     if (defaultOptions[kCRToastNotificationTypeKey])                kCRNotificationTypeDefault              = [defaultOptions[kCRToastNotificationTypeKey] integerValue];
     if (defaultOptions[kCRToastNotificationPreferredHeightKey])     kCRNotificationPreferredHeightDefault   = [defaultOptions[kCRToastNotificationPreferredHeightKey] floatValue];
+    if (defaultOptions[kCRToastNotificationPreferredPaddingKey])    kCRNotificationPreferredPaddingDefault  = [defaultOptions[kCRToastNotificationPreferredPaddingKey] floatValue];
     if (defaultOptions[kCRToastNotificationPresentationTypeKey])    kCRNotificationPresentationTypeDefault  = [defaultOptions[kCRToastNotificationPresentationTypeKey] integerValue];
     if (defaultOptions[kCRToastIdentifierKey])                      kCRToastIdentifer                       = defaultOptions[kCRToastIdentifierKey];
     
@@ -418,6 +425,7 @@ static NSDictionary *                kCRToastKeyClassMap                    = ni
     if (defaultOptions[kCRToastImageKey])                           kCRImageDefault                         = defaultOptions[kCRToastImageKey];
     if (defaultOptions[kCRToastImageContentModeKey])                kCRImageContentModeDefault              = [defaultOptions[kCRToastImageContentModeKey] integerValue];
     if (defaultOptions[kCRToastImageAlignmentKey])                  kCRImageAlignmentDefault                = [defaultOptions[kCRToastImageAlignmentKey] integerValue];
+    if (defaultOptions[kCRToastImageTintKey])                       kCRImageTintDefault                     = defaultOptions[kCRToastImageTintKey];
     if (defaultOptions[kCRToastShowActivityIndicatorKey])           kCRShowActivityIndicatorDefault         = [defaultOptions[kCRToastShowActivityIndicatorKey] boolValue];
     if (defaultOptions[kCRToastActivityIndicatorViewStyleKey])      kCRActivityIndicatorViewStyleDefault    = [defaultOptions[kCRToastActivityIndicatorViewStyleKey] integerValue];
     if (defaultOptions[kCRToastActivityIndicatorAlignmentKey])      kCRActivityIndicatorAlignmentDefault    = [defaultOptions[kCRToastActivityIndicatorAlignmentKey] integerValue];
@@ -530,6 +538,12 @@ static NSDictionary *                kCRToastKeyClassMap                    = ni
     return _options[kCRToastNotificationPreferredHeightKey] ?
     [_options[kCRToastNotificationPreferredHeightKey] floatValue] :
     kCRNotificationPreferredHeightDefault;
+}
+
+- (CGFloat)preferredPadding {
+    return _options[kCRToastNotificationPreferredPaddingKey] ?
+    [_options[kCRToastNotificationPreferredPaddingKey] floatValue] :
+    kCRNotificationPreferredPaddingDefault;
 }
 
 - (CRToastPresentationType)presentationType {
@@ -680,6 +694,10 @@ static NSDictionary *                kCRToastKeyClassMap                    = ni
 
 - (CRToastAccessoryViewAlignment)imageAlignment {
     return _options[kCRToastImageAlignmentKey] ? [_options[kCRToastImageAlignmentKey] integerValue] : kCRImageAlignmentDefault;
+}
+
+- (UIColor *)imageTint {
+    return _options[kCRToastImageTintKey] ?: kCRImageTintDefault;
 }
 
 - (BOOL)showActivityIndicator {

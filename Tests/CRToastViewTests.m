@@ -6,7 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import <CRToast/CRToast.h>
-#import <CRToast/CRToastView.h>
+#import "CRToastView.h"
 
 @interface CRToastViewTests : XCTestCase
 @property (strong, nonatomic) CRToastView *view;
@@ -48,13 +48,11 @@ CRToast * __TestToast(void) {
     toast.options = options;
     self.view.toast = toast;
     
-    CGRect assumedRect = CGRectMake(100, 0, 100, 100);
-    
     [self.view layoutSubviews];
     
-    BOOL rectsEqual = CGRectEqualToRect(assumedRect, self.view.imageView.frame);
+    BOOL centersEqual = CGPointEqualToPoint(self.view.center, self.view.imageView.center);
     
-    XCTAssertTrue(rectsEqual, @"center aligned rect should be equal to assumed rect. Intead was %@", NSStringFromCGRect(self.view.imageView.frame));
+    XCTAssertTrue(centersEqual, @"center of image view should be center of self.view (%@). Intead was %@", NSStringFromCGPoint(self.view.center), NSStringFromCGPoint(self.view.imageView.center));
 }
 
 - (void)testImageFrameRightAlignment {
@@ -113,7 +111,7 @@ CRToast * __TestToast(void) {
     
     BOOL centersEqual = CGPointEqualToPoint(assumedCenter, self.view.activityIndicator.center);
     
-    XCTAssertTrue(centersEqual, @"center aligned activity indicator center shold equal assumed center. Instead was %@", NSStringFromCGPoint(self.view.activityIndicator.center));
+    XCTAssertTrue(centersEqual, @"center aligned activity indicator center shold equal assumed center (%@). Instead was %@", NSStringFromCGPoint(self.view.center), NSStringFromCGPoint(self.view.activityIndicator.center));
 }
 
 - (void)testActivityFrameRightAlignment {
@@ -136,34 +134,76 @@ CRToast * __TestToast(void) {
     XCTAssertTrue(centersEqual, @"right aligned activity indicator center shold equal assumed center. Instead was %@", NSStringFromCGPoint(self.view.activityIndicator.center));
 }
 
+#pragma mark Padding
+
+- (void)testPreferredPaddingSetToZero {
+    CRToast *toast = __TestToast();
+    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    
+    options[kCRToastImageKey] = [UIImage imageNamed:@"alert_icon"];
+    options[kCRToastImageAlignmentKey] = @(CRToastAccessoryViewAlignmentLeft);
+    options[kCRToastTextKey] = @"Test";
+    options[kCRToastTextAlignmentKey] = @(NSTextAlignmentLeft);
+    options[kCRToastNotificationPreferredPaddingKey] = @0;
+    
+    toast.options = options;
+    self.view.toast = toast;
+    
+    [self.view layoutSubviews];
+    
+    CGFloat imageViewX = CGRectGetMinX(self.view.imageView.frame);
+    
+    XCTAssertTrue(imageViewX == 0.0, @"With no padding minX should be 0.0. Instead was %f", imageViewX);
+}
+
+- (void)testPrefferedPaddingIsRespectedWhenHigher {
+    CRToast *toast = __TestToast();
+    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    
+    options[kCRToastShowActivityIndicatorKey] = @YES;
+    options[kCRToastActivityIndicatorAlignmentKey] = @(CRToastAccessoryViewAlignmentLeft);
+    options[kCRToastTextKey] = @"Test";
+    options[kCRToastTextAlignmentKey] = @(NSTextAlignmentLeft);
+    options[kCRToastNotificationPreferredPaddingKey] = @20;
+    
+    toast.options = options;
+    self.view.toast = toast;
+    
+    [self.view layoutSubviews];
+    
+    CGFloat imageViewX = CGRectGetMinX(self.view.imageView.frame);
+    
+    XCTAssertTrue(imageViewX == 20.0, @"With no padding minX should be 20.0. Instead was %f", imageViewX);
+}
+
 #pragma mark Width Calculations
 - (void)testWidthWithOnlyLeftItem {
     
-    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, YES, CRToastAccessoryViewAlignmentLeft, NO, CRToastAccessoryViewAlignmentLeft);
+    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, 0.0f, YES, CRToastAccessoryViewAlignmentLeft, NO, CRToastAccessoryViewAlignmentLeft);
     
     XCTAssertTrue(width == 200, @"Width with only left item should be 200 (full width - (height x 1)). Instead was %f", width);
 }
 
 - (void)testWidthWithOnlyCenterItem {
-    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, YES, CRToastAccessoryViewAlignmentCenter, NO, CRToastAccessoryViewAlignmentLeft);
+    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, 0.0f, YES, CRToastAccessoryViewAlignmentCenter, NO, CRToastAccessoryViewAlignmentLeft);
     
     XCTAssertTrue(width == 300, @"Width with only center item should be 300 (full width). Instead was %f", width);
 }
 
 - (void)testWidthWithOnlyRightItem {
-    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, YES, CRToastAccessoryViewAlignmentRight, NO, CRToastAccessoryViewAlignmentLeft);
+    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, 0.0f, YES, CRToastAccessoryViewAlignmentRight, NO, CRToastAccessoryViewAlignmentLeft);
     
     XCTAssertTrue(width == 200, @"Width with only center item should be 300 (full width - (height x 1)). Instead was %f", width);
 }
 
 - (void)testWidthWithLeftAndCenter {
-    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, YES, CRToastAccessoryViewAlignmentLeft, YES, CRToastAccessoryViewAlignmentCenter);
+    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, 0.0f, YES, CRToastAccessoryViewAlignmentLeft, YES, CRToastAccessoryViewAlignmentCenter);
     
     XCTAssertTrue(width == 200, @"Width with left & center item should be 200 (full width - (height x 1)). Instead was %f", width);
 }
 
 - (void)testWidthWithLeftAndRight {
-    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, YES, CRToastAccessoryViewAlignmentLeft, YES, CRToastAccessoryViewAlignmentRight);
+    CGFloat width = CRContentWidthForAccessoryViewsWithAlignments(300, 100, 0.0f, YES, CRToastAccessoryViewAlignmentLeft, YES, CRToastAccessoryViewAlignmentRight);
     
     XCTAssertTrue(width == 100, @"Width with left & right item should be 200 (full width - (height x 2)). Instead was %f", width);
 }
